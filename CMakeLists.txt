@@ -5,7 +5,7 @@ project(jsonParser)
 
 
 # add the executable
-add_executable(jsonParser main.c hashmap.c)
+add_executable(jsonParser main.c )
 
 
 target_link_libraries(jsonParser json-c apr-1 aprutil-1)
