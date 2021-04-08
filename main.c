@@ -7,7 +7,7 @@
 #include <apr-1.0/apr_hash.h>
 #include <apr-1.0/apr_strings.h>
 
-void extractJson(FILE *fp, FILE *out)
+void jsonPacker(FILE *fp, FILE *out)
 {
     char buffer[1024];
     struct json_object *parsed_json;
@@ -42,31 +42,42 @@ void extractJson(FILE *fp, FILE *out)
                  break;
                  case json_type_boolean:
                         printf("json_type_booleann  key = %s val = %d\n", key, json_object_get_boolean(val));
-                        apr_hash_set(ht, key, APR_HASH_KEY_STRING, (void *)apr_itoa(mp,counter));
 
-                        tlv_chain_add_bool(&chain, json_object_get_boolean(val));
+                        if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
+                         {
+                            apr_hash_set(ht, key, APR_HASH_KEY_STRING, (void *)apr_itoa(mp,counter));
+
+                            tlv_chain_add_bool(&chain, json_object_get_boolean(val));
+                        }
                  break;
                  case json_type_double:
                         printf("json_type_doublen  key = %s val = %f\n", key, json_object_get_double(val));
-                        apr_hash_set(ht, key, APR_HASH_KEY_STRING, apr_itoa(mp,counter));
 
-                        tlv_chain_add_double(&chain, json_object_get_double(val));
-
+                        if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
+                        {
+                            apr_hash_set(ht, key, APR_HASH_KEY_STRING, apr_itoa(mp,counter));
+                            tlv_chain_add_double(&chain, json_object_get_double(val));
+                        }
                  break;
                  case json_type_int:
                         printf("json_type_intn  key = %s val = %d\n", key, json_object_get_int(val));
-                        apr_hash_set(ht, key, APR_HASH_KEY_STRING, apr_itoa(mp,counter));
 
-                        tlv_chain_add_int32(&chain, json_object_get_int(val));
+                        if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
+                        {
+                            apr_hash_set(ht, key, APR_HASH_KEY_STRING, apr_itoa(mp,counter));
 
+                            tlv_chain_add_int32(&chain, json_object_get_int(val));
+                        }
                  break;
                  case json_type_string:
                         printf("json_type_stringn key = %s val = %s\n", key, json_object_get_string(val));
 
-                        apr_hash_set(ht, key, APR_HASH_KEY_STRING,(void *) apr_itoa(mp,counter));
+                        if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
+                        {
+                            apr_hash_set(ht, key, APR_HASH_KEY_STRING,(void *) apr_itoa(mp,counter));
 
-                        tlv_chain_add_str(&chain, json_object_get_string(val));
-
+                            tlv_chain_add_str(&chain, json_object_get_string(val));
+                        }
                  break;
              }
 
@@ -108,7 +119,7 @@ int main(int argc, char **argv) {
     }
     FILE *out = fopen("output.bin", "wb");
 
-    extractJson(fp,out);
+    jsonPacker(fp,out);
     fclose(out);
 
 
