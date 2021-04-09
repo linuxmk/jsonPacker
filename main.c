@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "jsonPacker.h"
 
-#define NDEBUG  1
-
 
 int main(int argc, char **argv) {
     FILE *fp, *out;
@@ -29,7 +27,7 @@ int main(int argc, char **argv) {
     fclose(out);
     fclose(fp);
 
-    testDeSerilization(argv[2]);
+  //  testDeSerilization(argv[2]);
 
     return 0;;
 }

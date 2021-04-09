@@ -17,10 +17,10 @@ int32_t tlv_chain_add_double(tlv_chain_t *a, double x)
 {
     return tlv_chain_add_raw(a, 3, sizeof (x), (unsigned char *)&x);
 }
-// add tlv object which contains null terminated string
+
 int32_t tlv_chain_add_str( tlv_chain_t *a,  const char *str)
 {
-    return tlv_chain_add_raw(a, 4, strlen(str) + 1, (unsigned char *)str);
+    return tlv_chain_add_raw(a, 4, strlen(str) , (unsigned char *)str);
 }
 
 int32_t tlv_chain_add_raw(  tlv_chain_t *a, unsigned char type, int16_t size, const unsigned char *bytes)
@@ -29,7 +29,7 @@ int32_t tlv_chain_add_raw(  tlv_chain_t *a, unsigned char type, int16_t size, co
         return -1;
 
     // all elements used in chain?
-    if(a->used == 50)
+    if(MAX_TLV_OBJECTS  == a->used )
         return -1;
 
     int index = a->used;
@@ -44,6 +44,8 @@ int32_t tlv_chain_add_raw(  tlv_chain_t *a, unsigned char type, int16_t size, co
     // success
     return 0;
 }
+
+
 
 int32_t tlv_chain_free( tlv_chain_t *a)
 {
@@ -131,9 +133,7 @@ int32_t tlv_chain_deserialize( const unsigned char *src,  tlv_chain_t *dest, int
 
 }
 
-
-#ifdef NDEBUG
-int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
+int32_t tlv_chain_print( tlv_chain_t *a)
 {
     if(a == NULL)
         return -1;
@@ -148,37 +148,30 @@ int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
             {
             uint8_t x;
             memcpy(&x, a->object[i].data, sizeof(uint8_t));
-            fprintf(fp,"%d \n",x);
+            LOGI("%d \n",x);
             }
             break;
         case 2:
             {
                 uint32_t x;
                 memcpy(&x, a->object[i].data, sizeof(uint32_t));
-                fprintf(fp,"%d \n",x);
+                LOGI("%d \n",x);
             }
             break;
         case 3:
             {
             double x;
                 memcpy(&x, a->object[i].data, sizeof(double));
-                fprintf(fp,"%f \n",x);
+                LOGI("%f \n",x);
             }
             break;
 
         case 4:
              {
-                fprintf(fp,"%s \n",a->object[i].data);
+                LOGI("%s \n",a->object[i].data);
               }
               break;
            }
     }
     return 0;
 }
-#else
-int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
-{
-    return 0;
-}
-
-#endif

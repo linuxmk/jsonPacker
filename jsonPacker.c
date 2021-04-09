@@ -6,18 +6,25 @@
 #include <apr-1.0/apr_hash.h>
 #include <apr-1.0/apr_strings.h>
 
-void jsonPacker(FILE *fp, FILE *out)
+int printHash(void *rec, const void *key, apr_ssize_t klen, const void *value);
+
+int jsonPacker(FILE *fp, FILE *out)
 {
     char buffer[1024];
     struct json_object *parsed_json;
     unsigned char chainbuff[4096] = {0};
     int serOutSize;
+    int ret = 0;
 
     apr_pool_t *mp;
     apr_hash_t *ht;
 
-    apr_initialize();
-    apr_pool_create(&mp, NULL);
+    if( (ret = apr_initialize()) < 0)
+        return ret;
+
+    if( (ret = apr_pool_create(&mp, NULL)) < 0)
+        return  ret;
+
 
     ht = apr_hash_make(mp);
     tlv_chain_t chain;
@@ -37,15 +44,10 @@ void jsonPacker(FILE *fp, FILE *out)
              switch (type)
              {
                  case json_type_null:
-#ifdef  NDEBUG
                     printf("json_type_nulln\n");
-#endif
                  break;
                  case json_type_boolean:
-#ifdef  NDEBUG
-
-                        printf("json_type_booleann  key = %s val = %d\n", key, json_object_get_boolean(val));
-#endif
+                        LOGI("json_type_booleann  key = %s val = %d\n", key, json_object_get_boolean(val));
 
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                          {
@@ -54,10 +56,7 @@ void jsonPacker(FILE *fp, FILE *out)
                         }
                  break;
                  case json_type_double:
-#ifdef  NDEBUG
-
-                        printf("json_type_doublen  key = %s val = %f\n", key, json_object_get_double(val));
-#endif
+                        LOGI("json_type_doublen  key = %s val = %f\n", key, json_object_get_double(val));
 
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                         {
@@ -66,10 +65,7 @@ void jsonPacker(FILE *fp, FILE *out)
                         }
                  break;
                  case json_type_int:
-#ifdef  NDEBUG
-
-                        printf("json_type_intn  key = %s val = %d\n", key, json_object_get_int(val));
-#endif
+                        LOGI("json_type_intn  key = %s val = %d\n", key, json_object_get_int(val));
 
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                         {
@@ -78,9 +74,7 @@ void jsonPacker(FILE *fp, FILE *out)
                         }
                  break;
                  case json_type_string:
-#ifdef  NDEBUG
-                        printf("json_type_stringn key = %s val = %s\n", key, json_object_get_string(val));
-#endif
+                        LOGI("json_type_stringn key = %s val = %s\n", key, json_object_get_string(val));
 
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                         {
@@ -90,10 +84,23 @@ void jsonPacker(FILE *fp, FILE *out)
                  break;
              }
         }
+        free(parsed_json);
     }
 
     tlv_chain_serialize(&chain, chainbuff, &serOutSize);
     fwrite(chainbuff, 1, serOutSize, out);
+    apr_hash_do(printHash,out, ht);
+
+    tlv_chain_free(&chain);
+    return ret;
+}
+
+int printHash(void *rec, const void *key, apr_ssize_t klen, const void *value)
+{
+        FILE *out = (FILE *) rec;
+
+        int ret = fwrite(key, 1, strlen((char*)key), out);
+        return ret;
 }
 
 void testDeSerilization(const char *filename)
@@ -114,6 +121,6 @@ void testDeSerilization(const char *filename)
 
     tlv_chain_deserialize(chainbuff, &chain2, len);
 
-    tlv_chain_print(&chain2,stderr);
+    tlv_chain_print(&chain2);
 }
 

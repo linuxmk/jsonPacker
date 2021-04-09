@@ -6,6 +6,13 @@
 
 #define MAX_TLV_OBJECTS 100
 
+
+#ifdef Debug
+#define LOGI(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+#else
+#define LOGI(fmt, ...) do {} while (0)
+#endif
+
 // TLV data structure
 typedef struct tlv
 {
@@ -28,7 +35,7 @@ int32_t tlv_chain_add_str(tlv_chain_t *a, const char *str);
 int32_t tlv_chain_add_raw( tlv_chain_t *a, unsigned char type, int16_t size, const unsigned char *bytes);
 int32_t tlv_chain_serialize( tlv_chain_t *a, unsigned char *dest, int32_t *count);
 int32_t tlv_chain_deserialize(const unsigned char *src, tlv_chain_t *dest, int32_t length);
-int32_t tlv_chain_print(tlv_chain_t *a, FILE *fp);
+int32_t tlv_chain_print(tlv_chain_t *a);
 int32_t tlv_chain_free( tlv_chain_t *a);
 
 #endif

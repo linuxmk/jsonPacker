@@ -9,7 +9,8 @@
 #include <apr-1.0/apr_hash.h>
 #include <apr-1.0/apr_strings.h>
 
-void jsonPacker(FILE *fp, FILE *out);
+int jsonPacker(FILE *fp, FILE *out);
 void testDeSerilization(const char *filename);
+int printHash(void *rec, const void *key, apr_ssize_t klen, const void *value);
 
 #endif
