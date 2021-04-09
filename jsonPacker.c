@@ -99,7 +99,14 @@ int printHash(void *rec, const void *key, apr_ssize_t klen, const void *value)
 {
         FILE *out = (FILE *) rec;
 
-        int ret = fwrite(key, 1, strlen((char*)key), out);
+        tlv_t tlv;
+        tlv.type = 4;
+        tlv.size = klen;
+        tlv.data = (unsigned char *)malloc(klen);
+        memset(tlv.data, 0, klen);
+        memcpy(tlv.data, key, klen);
+
+        int ret = fwrite(&tlv, 1, sizeof (tlv) + tlv.size +1, out);
         return ret;
 }
 

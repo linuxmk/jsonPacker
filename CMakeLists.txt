@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name
-project(jsonPacker)
+project(zlatko)
 
 
 # add the executable
-add_executable(jsonPacker main.c tlv.c jsonPacker.c)
+add_executable(zlatko main.c tlv.c jsonPacker.c)
 
-set(CMAKE_BUILD_TYPE Debug)
+if (CMAKE_BUILD_TYPE EQUAL "Debug")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -NDEBUG")
+endif()
 
-target_link_libraries(jsonPacker json-c apr-1 aprutil-1)
+target_link_libraries(zlatko json-c apr-1 aprutil-1)

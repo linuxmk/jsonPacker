@@ -6,11 +6,10 @@
 
 #define MAX_TLV_OBJECTS 100
 
-
-#ifdef Debug
-#define LOGI(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
-#else
+#ifdef NDEBUG
 #define LOGI(fmt, ...) do {} while (0)
+#else
+#define LOGI(fmt, ...) fprintf(stderr, "[debug] " fmt, __VA_ARGS__)
 #endif
 
 // TLV data structure
