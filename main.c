@@ -11,7 +11,8 @@ void jsonPacker(FILE *fp, FILE *out)
 {
     char buffer[1024];
     struct json_object *parsed_json;
-
+    unsigned char chainbuff[4096] = {0};
+    int serOutSize;
 
     apr_pool_t *mp;
     apr_hash_t *ht;
@@ -38,7 +39,8 @@ void jsonPacker(FILE *fp, FILE *out)
             type = json_object_get_type(val);
              switch (type)
              {
-                 case json_type_null: printf("json_type_nulln\n");
+                 case json_type_null:
+                    printf("json_type_nulln\n");
                  break;
                  case json_type_boolean:
                         printf("json_type_booleann  key = %s val = %d\n", key, json_object_get_boolean(val));
@@ -46,7 +48,6 @@ void jsonPacker(FILE *fp, FILE *out)
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                          {
                             apr_hash_set(ht, key, APR_HASH_KEY_STRING, (void *)apr_itoa(mp,counter));
-
                             tlv_chain_add_bool(&chain, json_object_get_boolean(val));
                         }
                  break;
@@ -65,7 +66,6 @@ void jsonPacker(FILE *fp, FILE *out)
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                         {
                             apr_hash_set(ht, key, APR_HASH_KEY_STRING, apr_itoa(mp,counter));
-
                             tlv_chain_add_int32(&chain, json_object_get_int(val));
                         }
                  break;
@@ -75,40 +75,41 @@ void jsonPacker(FILE *fp, FILE *out)
                         if(!apr_hash_get(ht, key, APR_HASH_KEY_STRING))
                         {
                             apr_hash_set(ht, key, APR_HASH_KEY_STRING,(void *) apr_itoa(mp,counter));
-
                             tlv_chain_add_str(&chain, json_object_get_string(val));
                         }
                  break;
              }
-
-
         }
+    }
 
-//        {
-//               const char *val = apr_hash_get(ht, "key1", APR_HASH_KEY_STRING);
-//               printf("val for \"foo\" is %d\n", atoi(val));
-//           }
-
-
-
+    tlv_chain_serialize(&chain, chainbuff, &serOutSize);
+    fwrite(chainbuff, 1, serOutSize, out);
 }
 
+void testDeSerilization(const char *filename)
+{
+    FILE *fp;
+    fp = fopen(filename, "rb");
+    fseek(fp, 0, SEEK_END);
+    size_t len = ftell(fp);
+
+    fseek(fp, 0, SEEK_SET);
+
     unsigned char chainbuff[2048] = {0};
-    int l;
+    tlv_chain_t  chain2;
+    fread(chainbuff,1, len,fp);
 
+    tlv_chain_deserialize(chainbuff, &chain2, len);
 
-    tlv_chain_serialize(&chain, chainbuff, &l);
-    size_t ret = fwrite(chainbuff, 1, l, out);
-
-
+    tlv_chain_print(&chain2,stderr);
 }
 
 int main(int argc, char **argv) {
-	FILE *fp;
+    FILE *fp, *out;
 
-    if(argc !=2)
+    if(argc !=3)
     {
-        fprintf(stderr, "Usage: %s filename.json\n", argv[1]);
+        fprintf(stderr, "Usage: %s filename.json outputFile\n", argv[1]);
         return -1;
     }
 
@@ -117,27 +118,18 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Can not open file %s\n", argv[1]);
         return -1;
     }
-    FILE *out = fopen("output.bin", "wb");
+
+    if(!(out = fopen(argv[2], "wb")))
+    {
+            fprintf(stderr, "Can not open file %s for output\n", argv[2]);
+            return -1;
+    }
 
     jsonPacker(fp,out);
     fclose(out);
-
-
     fclose(fp);
 
-    out = fopen("output.bin", "rb");
-    fseek(out, 0, SEEK_END);
-    size_t len = ftell(out);
-
-    fseek(out, 0, SEEK_SET);
-
-    unsigned char chainbuff[2048] = {0};
-    tlv_chain_t  chain2;
-    fread(chainbuff,1, len,out);
-
-    tlv_chain_deserialize(chainbuff, &chain2, len);
-
-    tlv_chain_print(&chain2,stderr);
+    testDeSerilization(argv[2]);
 
     return 0;;
 }
