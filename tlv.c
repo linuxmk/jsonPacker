@@ -132,7 +132,7 @@ int32_t tlv_chain_deserialize( const unsigned char *src,  tlv_chain_t *dest, int
 }
 
 
-
+#ifdef NDEBUG
 int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
 {
     if(a == NULL)
@@ -159,21 +159,26 @@ int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
             }
             break;
         case 3:
-        {
+            {
             double x;
-            memcpy(&x, a->object[i].data, sizeof(double));
-            fprintf(fp,"%f \n",x);
-        }
+                memcpy(&x, a->object[i].data, sizeof(double));
+                fprintf(fp,"%f \n",x);
+            }
             break;
 
         case 4:
-
-              fprintf(fp,"%s \n",a->object[i].data);
-            break;
-
+             {
+                fprintf(fp,"%s \n",a->object[i].data);
+              }
+              break;
            }
     }
-
-
     return 0;
 }
+#else
+int32_t tlv_chain_print( tlv_chain_t *a, FILE *fp)
+{
+    return 0;
+}
+
+#endif
