@@ -1,7 +1,7 @@
 # jsonPacker
 Json packer
 
-Requirement:
+Requirements:
 	- Apache Portable Runtime library
 	- libjson-c library
 	- cmake
